@@ -19,26 +19,45 @@ byteNumber = 0
 readFile = selectedFile.read()
 
 currentLineInText = ""
+currentLineInConsole = ""
+last16Bytes = []
+
+lastTwoLinesAreRepeated = False
+
 for currentByte in readFile:
     if byteNumber % 16 == 0:
-        if byteNumber != 0:
-            print(" |" + currentLineInText + "|");
-            currentLineInText = ""
-
-        print(formatNumberLength(f'{byteNumber:x}', len(f'{len(readFile)}')), end="  ")
+        currentLineInConsole += formatNumberLength(f'{byteNumber:x}', len(f'{len(readFile):x}')) + "  " 
     if byteNumber % 16 == 8:
-        print (" ", end="")
+        currentLineInConsole += " "
 
     #https://stackoverflow.com/questions/16414559/how-to-use-hex-without-0x-in-python
-    print(formatNumberLength(f'{currentByte:x}', 2), end=" ")
+    currentLineInConsole += formatNumberLength(f'{currentByte:x}', 2) + " "
     byteNumber += 1
-    
+
     #https://www.toppr.com/guides/python-guide/examples/python-examples/python-program-find-ascii-value-character/#:~:text=chr%20()%20is%20a%20built,parameter%20is%20the%20ASCII%20code.
     currentLineInText += formatASCIICode(currentByte)
 
+    
+    current16Bytes = readFile[slice(byteNumber - 16, byteNumber)]
+    if byteNumber % 16 == 0 and byteNumber != 0:
+        currentLineInConsole += " |" + currentLineInText + "|";
+        currentLineInText = ""
+    
+        #https://www.w3schools.com/python/ref_func_slice.asp
+        if current16Bytes == last16Bytes and not lastTwoLinesAreRepeated:
+            print("*")
+            lastTwoLinesAreRepeated = True
+        elif current16Bytes != last16Bytes:
+            print(currentLineInConsole)                    
+            lastTwoLinesAreRepeated = False
+
+        currentLineInConsole = ""
+        last16Bytes = current16Bytes
+
 #print(byteNumber)
 #print(currentLineInText, end="")
+print(currentLineInConsole, end="")
 if byteNumber % 16 != 0:
     if byteNumber % 16 <= 7:
         print(" ", end="")
-    print(("   " * (16 - byteNumber % 16)) + " |" + currentLineInText + "|");
+    print(("   " * (16 - byteNumber % 16)) + " |" + currentLineInText + "|")
