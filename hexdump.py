@@ -12,7 +12,19 @@ def formatASCIICode(asciiCode):
 
 #https://www.tutorialsteacher.com/python/python-read-write-file#:~:text=Writing%20to%20a%20Binary%20File,in%20binary%20format%20for%20writing.
 #https://www.geeksforgeeks.org/reading-binary-files-in-python/
-selectedFile = open(sys.argv[1], 'rb');
+selectedFile = "";
+
+flags = []
+
+#https://www.w3schools.com/python/ref_func_range.asp
+for i in range(1, len(sys.argv)):
+    currentWord = sys.argv[i]
+    if currentWord[0] == "-":
+        #https://www.w3schools.com/python/python_lists_add.asp       
+        flags.append(currentWord[slice(1, len(currentWord))].lower())        
+    else:
+        selectedFile = open(currentWord, 'rb')
+#print(flags)
 
 byteNumber = 0
 
@@ -23,6 +35,8 @@ currentLineInConsole = ""
 last16Bytes = []
 
 lastTwoLinesAreRepeated = False
+
+settings = ["noascii" in flags]
 
 for currentByte in readFile:
     if byteNumber % 16 == 0:
@@ -36,12 +50,12 @@ for currentByte in readFile:
 
     #https://www.toppr.com/guides/python-guide/examples/python-examples/python-program-find-ascii-value-character/#:~:text=chr%20()%20is%20a%20built,parameter%20is%20the%20ASCII%20code.
     currentLineInText += formatASCIICode(currentByte)
-
     
     current16Bytes = readFile[slice(byteNumber - 16, byteNumber)]
     if byteNumber % 16 == 0 and byteNumber != 0:
-        currentLineInConsole += " |" + currentLineInText + "|";
-        currentLineInText = ""
+        if not settings[0]:
+            currentLineInConsole += " |" + currentLineInText + "|";
+            currentLineInText = ""
     
         #https://www.w3schools.com/python/ref_func_slice.asp
         if current16Bytes == last16Bytes and not lastTwoLinesAreRepeated:
@@ -54,10 +68,10 @@ for currentByte in readFile:
         currentLineInConsole = ""
         last16Bytes = current16Bytes
 
-#print(byteNumber)
-#print(currentLineInText, end="")
 print(currentLineInConsole, end="")
-if byteNumber % 16 != 0:
+if byteNumber % 16 != 0 and not settings[0]:
     if byteNumber % 16 <= 7:
         print(" ", end="")
     print(("   " * (16 - byteNumber % 16)) + " |" + currentLineInText + "|")
+
+print(f'{byteNumber:x}')
